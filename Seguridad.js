@@ -6,9 +6,16 @@
 //╚══════╝             ╚══════╝ .[By. Luis David Tovar Vasquez, 02/Oct/2026]
 
 
-BotonConvertir.disabled = true;
-let ContraseñaOk;
+
 let modoOperacion = 1; // 1 = cifrar, 0 = descifrar
+let ContraseñaSecreta;
+let ContraseñaConfirmada;
+
+//--------------  INICIALIZACIONES: ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+BotonConvertir.disabled = true;
+IndicadorConstraseña.textContent = "Contraseña Vacia"; 
+IndicadorConstraseña.className = 'dynamic-feedback ' + 'invalid'; 
 
 document.addEventListener('DOMContentLoaded', function(){    // Escuhador de eventos DOM
 
@@ -25,6 +32,7 @@ const IconoVerClave = document.getElementById('IconoVerClave');
 const IndicadorConstraseña = document.getElementById('IndicadorConstraseña');
 const BotonCifrar = document.getElementById('BotonCifrar');
 const BotonDecifrar = document.getElementById('BotonDecifrar');
+const BotonConfirClave = document.getElementById('BotonConfirClave');
 
 
 //--------------  EVENTOS: ------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -34,9 +42,10 @@ BotonConvertir.addEventListener('click', ConvertirTexto);
 BotonCopiar.addEventListener('click', CopiarTexto);
 BotonBorrar.addEventListener('click', BorrarTexto);
 BotonVerClave.addEventListener('click', VerClave );
-PasswordIn.addEventListener('input', ValidarContraseña);
+PasswordIn.addEventListener('input', EstadoContraseña);
 BotonCifrar.addEventListener('change',SelectorCifrar);
 BotonDecifrar.addEventListener('change',SelectorDecifrar);
+BotonConfirClave.addEventListener('click',ConfirmarContraseña);
 
 //--------------  FUNCIONES: ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -98,30 +107,38 @@ function CopiarTexto(){
 
 // Funcion para Validar la contraseña: 
 
-    function ValidarContraseña(){
-
-        // Habilitar/deshabilitar botón de convertir
-        if (PasswordIn.value == "midgard") {
-            BotonConvertir.disabled = false;
-            IndicadorConstraseña.textContent = "Contraseña Valida";     
-            IndicadorConstraseña.className = 'dynamic-feedback ' + 'valid';   
-            ContraseñaOk = true;
-        } else {
-                BotonConvertir.disabled = true;
-                IndicadorConstraseña.textContent = "Contraseña invalida"; 
-                IndicadorConstraseña.className = 'dynamic-feedback ' + 'invalid'; 
-                ContraseñaOk = false;
-                }
+    function EstadoContraseña(){  
+        if (PasswordIn.value ==''){
+        IndicadorConstraseña.textContent = "Contraseña Vacia"; 
+        IndicadorConstraseña.className = 'dynamic-feedback ' + 'invalid'; 
+        }else{
+        IndicadorConstraseña.textContent = "Contraseña sin confirmar"; 
+        IndicadorConstraseña.className = 'dynamic-feedback ' + 'unconfirmed'; 
+        }
+        BotonConvertir.disabled = true;
+        ContraseñaConfirmada = false;
     }
 
-    // Funcion Selector Modo Cifrar:                                  
+    
+// Funcion Confirmar contraseña: 
+
+    function ConfirmarContraseña(){
+        ContraseñaSecreta = PasswordIn.value;
+        ContraseñaConfirmada = true;
+        BotonConvertir.disabled = false;
+        IndicadorConstraseña.textContent = "Contraseña Ok";     
+        IndicadorConstraseña.className = 'dynamic-feedback ' + 'valid';
+
+    }
+
+// Funcion Selector Modo Cifrar:                                  
 
     function SelectorCifrar() {
         modoOperacion = 1;
         console.log('Modo cambiado a Cifrar: ' + modoOperacion);
     }
 
-    // Funcion Selector Modo Decifrar:
+// Funcion Selector Modo Decifrar:
 
     function SelectorDecifrar() {
         modoOperacion = 0;
@@ -129,7 +146,7 @@ function CopiarTexto(){
     }
 
 
-    // Funcion para Obtener la Clave:  
+// Funcion para Obtener la Clave:  
 
     async function ObtenerClave(password, salt) {
         const enc = new TextEncoder();  //Convierte strings en bytes (Uint8Array),
@@ -149,7 +166,7 @@ function CopiarTexto(){
     }
 
 
-   // Funcion para Cifrar:
+// Funcion para Cifrar:
 
     async function encrypt(text, password) {
         const enc = new TextEncoder();
@@ -174,7 +191,7 @@ function CopiarTexto(){
          );
     }
 
-    // Funcion para Decifrar:
+// Funcion para Decifrar:
 
     async function decrypt(code, password) {
         const dec = new TextDecoder();
@@ -194,19 +211,19 @@ function CopiarTexto(){
         return dec.decode(decrypted);
     }
 
-    // Funcion Convertir Texto:                                  
+// Funcion Convertir Texto:                                  
 
     async function ConvertirTexto() {
         let mensaje = TextoIn.value;
         let Contraseña = PasswordIn.value;
         let Codigo;
-        if (modoOperacion == 1 && ContraseñaOk) {
+        if (modoOperacion == 1) {
                 codigo = await encrypt(mensaje, Contraseña);
                 TextoOut.value = codigo;
                 ActualizarContadorSalida();
         }
 
-        if (modoOperacion == 0 && ContraseñaOk) {
+        if (modoOperacion == 0) {
                 codigo = await decrypt(mensaje, Contraseña);
                 TextoOut.value = codigo;
                 ActualizarContadorSalida();
